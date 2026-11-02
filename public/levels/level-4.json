@@ -1,0 +1,11 @@
+{
+  "id": 4,
+  "name": "四色混战",
+  "board": { "rows": 8, "cols": 8, "elementTypes": 6 },
+  "movesLimit": 24,
+  "goals": [
+    { "type": "collect", "element": 4, "count": 20 },
+    { "type": "collect", "element": 5, "count": 20 }
+  ],
+  "starThresholds": { "scores": [700, 1200, 1900] }
+}

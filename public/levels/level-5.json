@@ -1,0 +1,8 @@
+{
+  "id": 5,
+  "name": "星屑终章",
+  "board": { "rows": 8, "cols": 8, "elementTypes": 6 },
+  "movesLimit": 18,
+  "goals": [{ "type": "collect", "element": 6, "count": 35 }],
+  "starThresholds": { "scores": [900, 1500, 2300] }
+}

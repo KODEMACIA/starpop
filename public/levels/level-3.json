@@ -1,0 +1,8 @@
+{
+  "id": 3,
+  "name": "连锁试炼",
+  "board": { "rows": 8, "cols": 8, "elementTypes": 6 },
+  "movesLimit": 20,
+  "goals": [{ "type": "collect", "element": 2, "count": 30 }],
+  "starThresholds": { "scores": [600, 1100, 1700] }
+}

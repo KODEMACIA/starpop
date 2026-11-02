@@ -1,0 +1,35 @@
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  color-scheme: dark;
+  background-color: #0f0f1a;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  justify-content: center;
+  min-width: 320px;
+  min-height: 100vh;
+  /* 漂亮的星空渐变背景 */
+  background: radial-gradient(circle at center, #1a1a2e 0%, #0f0f1a 100%);
+  overflow: hidden;
+}
+
+#app {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+}
+
+canvas {
+  /* 画布圆角和阴影，看起来像实体游戏机 */
+  border-radius: 20px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+  display: block;
+  /* 关怀模式放大后，页面会自动等比缩小画布，防止溢出 */
+  max-width: 95vw;
+  max-height: 95vh;
+}

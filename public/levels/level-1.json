@@ -1,0 +1,8 @@
+{
+  "id": 1,
+  "name": "初见星屑",
+  "board": { "rows": 8, "cols": 8, "elementTypes": 5 },
+  "movesLimit": 20,
+  "goals": [{ "type": "collect", "element": 1, "count": 20 }],
+  "starThresholds": { "scores": [300, 600, 1000] }
+}

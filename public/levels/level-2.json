@@ -1,0 +1,11 @@
+{
+  "id": 2,
+  "name": "双色任务",
+  "board": { "rows": 8, "cols": 8, "elementTypes": 6 },
+  "movesLimit": 22,
+  "goals": [
+    { "type": "collect", "element": 1, "count": 18 },
+    { "type": "collect", "element": 3, "count": 18 }
+  ],
+  "starThresholds": { "scores": [500, 900, 1400] }
+}
