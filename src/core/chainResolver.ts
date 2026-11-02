@@ -2,7 +2,7 @@ import type { Board, Cell, GameEvent, Rules, MatchGroup } from './types';
 import { findMatches } from './matchDetector';
 import { collapse, spawn } from './gravityResolver';
 import { calculateWaveScore } from './scoreCalculator';
-import { cloneBoard, createBoard } from './board'; // <--- 引入 createBoard
+import { cloneBoard } from './board';
 
 export interface ChainResult {
   board: Board;
@@ -169,7 +169,7 @@ export function resolveChain(
         if (nr >= 0 && nr < rules.rows && nc >= 0 && nc < rules.cols) {
           if (obstacles[nr][nc] > 0) {
             obstacles[nr][nc]--;
-            if (obstacles[nr][nc] === 0) iceCleared++;
+            iceCleared++; // 【核心修复】每破除一层冰，进度 +1
           }
         }
       }
@@ -179,15 +179,14 @@ export function resolveChain(
     for (const cell of cells) cleared[cell.r][cell.c] = 0;
 
     if (isClearScreen) {
-      // 修复：使用 createBoard 生成一个没有初始三连的干净棋盘
-      current = createBoard(rules, rng);
-      
-      // 如果是清屏，障碍物（如冰块）也全部降一层
+      current = Array.from({ length: rules.rows }, () =>
+        Array.from({ length: rules.cols }, () => Math.floor(rng() * rules.elementTypes) + 1)
+      );
       for (let r = 0; r < rules.rows; r++) {
         for (let c = 0; c < rules.cols; c++) {
           if (obstacles[r][c] > 0) {
             obstacles[r][c]--;
-            if (obstacles[r][c] === 0) iceCleared++;
+            iceCleared++;
           }
         }
       }

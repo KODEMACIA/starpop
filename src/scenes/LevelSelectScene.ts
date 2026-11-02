@@ -117,7 +117,6 @@ export class LevelSelectScene extends Phaser.Scene {
 
         for(let r=0; r<8; r+=2) {
           for(let c=0; c<8; c+=2) {
-            // 避开通往中心石头的格子
             if (!(r>=3 && r<=4 && c>=3 && c<=4)) {
               let layers = 1;
               if (chapter === 0) layers = Math.random() < 0.5 ? 1 : 2;
@@ -139,10 +138,10 @@ export class LevelSelectScene extends Phaser.Scene {
         });
 
         const totalIceLayers = lvl.obstacles.ices.reduce((sum, ice) => sum + ice.layers, 0);
-        lvl.goals = [{ type: 'clearIce', count: Math.floor(totalIceLayers * 0.6) }];
+        // 【核心修复】不用乘 0.6，直接要求全破
+        lvl.goals = [{ type: 'clearIce', count: totalIceLayers }];
 
       } else {
-        // === 普通关卡只有收集任务，无任何障碍物 ===
         const el1 = (i * 2) % elementTypes + 1; 
         const count1 = 15 + chapter * 5 + (i % 3) * 5; 
 
@@ -157,7 +156,6 @@ export class LevelSelectScene extends Phaser.Scene {
         }
       }
       
-      // 【核心修改】存入全局注册表
       levelRegistry[i] = lvl; 
     }
   }

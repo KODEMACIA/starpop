@@ -8,7 +8,7 @@ import { collapse, spawn } from '../core/gravityResolver';
 import { progress } from '../app/ProgressService';
 import { LevelSession } from '../app/LevelSession';
 import { audio } from '../infra/AudioService';
-import { levelRegistry } from '../app/LevelRegistry'; // <--- 引入注册表
+import { levelRegistry } from '../app/LevelRegistry';
 
 const CELL = 60;
 const OFFSET_X = 60;
@@ -59,7 +59,6 @@ export class GameScene extends Phaser.Scene {
       audio.stopBgm();
     }
     
-    // 【核心修改】从注册表读取，不再用 this.cache.json
     this.config = levelRegistry[this.levelId];
     if (!this.config) return;
 
@@ -91,11 +90,6 @@ export class GameScene extends Phaser.Scene {
     this.resetIdleTimer();
   }
 
-  // ... 下面的代码（createBackButton, buildTiles, syncTiles, refreshHud, onPointerDown, 
-  // performMove, performBrush, useHint, useExtraMoves, useBrushTool, useShuffle, animateSwap, 
-  // playEvents, showComboText, animateEliminate, delay, showSettleButton, settleWithEggs） 
-  // 完全保持你现在的样子，不需要修改。如果你刚才覆盖了整个文件，这里直接保留即可。
-  
   private createBackButton(): void {
     const backBtn = this.add.text(20, 25, '← 返回', {
       fontSize: '20px', color: '#aaaaaa', backgroundColor: '#2a2a40', padding: { x: 10, y: 8 }
@@ -662,7 +656,7 @@ export class GameScene extends Phaser.Scene {
             if (nr >= 0 && nr < this.config.board.rows && nc >= 0 && nc < this.config.board.cols) {
               if (this.session.obstacles[nr][nc] > 0) {
                 this.session.obstacles[nr][nc]--;
-                if (this.session.obstacles[nr][nc] === 0) this.session.iceCleared++;
+                this.session.iceCleared++; // 【已修复】每破除一层冰，进度 +1
               }
             }
           }
@@ -707,7 +701,7 @@ export class GameScene extends Phaser.Scene {
           }
           if (this.session.obstacles[r][c] > 0) {
             this.session.obstacles[r][c]--;
-            if (this.session.obstacles[r][c] === 0) this.session.iceCleared++;
+            this.session.iceCleared++; // 【已修复】每破除一层冰，进度 +1
           }
         }
       }
