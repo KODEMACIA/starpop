@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { progress } from '../app/ProgressService';
 import { audio } from '../infra/AudioService';
+import { levelRegistry } from '../app/LevelRegistry';
 import type { LevelConfig } from '../core/types';
 
 export class LevelSelectScene extends Phaser.Scene {
@@ -92,7 +93,6 @@ export class LevelSelectScene extends Phaser.Scene {
   }
 
   private generateAndLoadLevels() {
-    // 每次进入都强制刷新配置
     for (let i = 1; i <= 18; i++) {
       const chapter = Math.floor((i - 1) / 6);
       const isBoss = i % 6 === 0;
@@ -108,13 +108,11 @@ export class LevelSelectScene extends Phaser.Scene {
       };
 
       if (isBoss) {
-        // === 只有挑战关卡才有障碍物 ===
         lvl.obstacles = {
           rocks: [{r:3,c:3}, {r:3,c:4}, {r:4,c:3}, {r:4,c:4}],
           ices: []
         };
         
-        // 使用 Map 防止冰块位置重叠导致目标数大于实际数
         const iceMap = new Map<string, number>();
 
         for(let r=0; r<8; r+=2) {
@@ -130,20 +128,17 @@ export class LevelSelectScene extends Phaser.Scene {
           }
         }
         
-        // 补充零散的厚冰
         let extraLayer1 = chapter === 0 ? 2 : (chapter === 1 ? 3 : 4);
         let extraLayer2 = chapter === 0 ? 1 : (chapter === 1 ? 2 : 3);
         iceMap.set(`1,3`, extraLayer1);
         iceMap.set(`6,4`, extraLayer2);
 
-        // 转换为数组并计算总层数
         lvl.obstacles.ices = Array.from(iceMap.entries()).map(([key, layers]) => {
           const [r, c] = key.split(',').map(Number);
           return { r, c, layers };
         });
 
         const totalIceLayers = lvl.obstacles.ices.reduce((sum, ice) => sum + ice.layers, 0);
-        // 目标数量设定为总层数的 60%，确保玩家绝对能打破
         lvl.goals = [{ type: 'clearIce', count: Math.floor(totalIceLayers * 0.6) }];
 
       } else {
@@ -152,19 +147,18 @@ export class LevelSelectScene extends Phaser.Scene {
         const count1 = 15 + chapter * 5 + (i % 3) * 5; 
 
         if (i % 2 === 0) {
-          // 偶数关：双元素收集
           const el2 = (el1 % elementTypes) + 1;
           lvl.goals = [
             { type: 'collect', element: el1, count: count1 },
             { type: 'collect', element: el2, count: Math.floor(count1 * 0.8) }
           ];
         } else {
-          // 奇数关：单元素收集
           lvl.goals = [{ type: 'collect', element: el1, count: count1 }];
         }
       }
       
-      this.cache.json.add(`level-${i}`, lvl); 
+      // 【核心修改】存入全局注册表
+      levelRegistry[i] = lvl; 
     }
   }
 }

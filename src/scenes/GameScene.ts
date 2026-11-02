@@ -8,6 +8,7 @@ import { collapse, spawn } from '../core/gravityResolver';
 import { progress } from '../app/ProgressService';
 import { LevelSession } from '../app/LevelSession';
 import { audio } from '../infra/AudioService';
+import { levelRegistry } from '../app/LevelRegistry'; // <--- 引入注册表
 
 const CELL = 60;
 const OFFSET_X = 60;
@@ -58,7 +59,8 @@ export class GameScene extends Phaser.Scene {
       audio.stopBgm();
     }
     
-    this.config = this.cache.json.get(`level-${this.levelId}`) as LevelConfig;
+    // 【核心修改】从注册表读取，不再用 this.cache.json
+    this.config = levelRegistry[this.levelId];
     if (!this.config) return;
 
     this.session = new LevelSession(this.config);
@@ -66,7 +68,6 @@ export class GameScene extends Phaser.Scene {
       this.session.movesLeft = Math.floor(this.config.movesLimit * 1.2);
     }
 
-    // 开局防死局处理（传入障碍物）
     if (!hasPossibleMove(this.session.board, this.session.obstacles)) {
       this.session.board = shuffleBoard(this.session.board, this.session.obstacles, this.session.rules);
     }
@@ -90,6 +91,11 @@ export class GameScene extends Phaser.Scene {
     this.resetIdleTimer();
   }
 
+  // ... 下面的代码（createBackButton, buildTiles, syncTiles, refreshHud, onPointerDown, 
+  // performMove, performBrush, useHint, useExtraMoves, useBrushTool, useShuffle, animateSwap, 
+  // playEvents, showComboText, animateEliminate, delay, showSettleButton, settleWithEggs） 
+  // 完全保持你现在的样子，不需要修改。如果你刚才覆盖了整个文件，这里直接保留即可。
+  
   private createBackButton(): void {
     const backBtn = this.add.text(20, 25, '← 返回', {
       fontSize: '20px', color: '#aaaaaa', backgroundColor: '#2a2a40', padding: { x: 10, y: 8 }
@@ -684,7 +690,7 @@ export class GameScene extends Phaser.Scene {
 
       if (screenEggs.length === 0) break;
 
-      screenEggs.shift()!;
+      screenEggs.shift();
       const keepEggs = screenEggs.map(pos => ({
         r: pos.r, c: pos.c, val: this.session.board[pos.r][pos.c]
       }));
