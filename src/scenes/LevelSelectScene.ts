@@ -92,11 +92,10 @@ export class LevelSelectScene extends Phaser.Scene {
   }
 
   private generateAndLoadLevels() {
-    // 去掉了缓存拦截，每次进入大厅都强制刷新关卡配置
+    // 每次进入都强制刷新配置
     for (let i = 1; i <= 18; i++) {
       const chapter = Math.floor((i - 1) / 6);
       const isBoss = i % 6 === 0;
-      // 限制最大元素种类为6
       const elementTypes = Math.min(5 + chapter, 6);
 
       const lvl: LevelConfig = {
@@ -109,33 +108,46 @@ export class LevelSelectScene extends Phaser.Scene {
       };
 
       if (isBoss) {
-        // 挑战关卡：主打障碍物与破冰
+        // === 只有挑战关卡才有障碍物 ===
         lvl.obstacles = {
           rocks: [{r:3,c:3}, {r:3,c:4}, {r:4,c:3}, {r:4,c:4}],
           ices: []
         };
         
+        // 使用 Map 防止冰块位置重叠导致目标数大于实际数
+        const iceMap = new Map<string, number>();
+
         for(let r=0; r<8; r+=2) {
           for(let c=0; c<8; c+=2) {
+            // 避开通往中心石头的格子
             if (!(r>=3 && r<=4 && c>=3 && c<=4)) {
               let layers = 1;
               if (chapter === 0) layers = Math.random() < 0.5 ? 1 : 2;
               else if (chapter === 1) layers = Math.random() < 0.5 ? 2 : 3;
               else layers = Math.random() < 0.5 ? 3 : 4;
-              lvl.obstacles.ices!.push({r, c, layers});
+              iceMap.set(`${r},${c}`, layers);
             }
           }
         }
+        
+        // 补充零散的厚冰
         let extraLayer1 = chapter === 0 ? 2 : (chapter === 1 ? 3 : 4);
         let extraLayer2 = chapter === 0 ? 1 : (chapter === 1 ? 2 : 3);
-        lvl.obstacles.ices!.push({r: 1, c: 3, layers: extraLayer1});
-        lvl.obstacles.ices!.push({r: 6, c: 4, layers: extraLayer2});
-        
-        const totalIceLayers = lvl.obstacles.ices!.reduce((sum, ice) => sum + ice.layers, 0);
+        iceMap.set(`1,3`, extraLayer1);
+        iceMap.set(`6,4`, extraLayer2);
+
+        // 转换为数组并计算总层数
+        lvl.obstacles.ices = Array.from(iceMap.entries()).map(([key, layers]) => {
+          const [r, c] = key.split(',').map(Number);
+          return { r, c, layers };
+        });
+
+        const totalIceLayers = lvl.obstacles.ices.reduce((sum, ice) => sum + ice.layers, 0);
+        // 目标数量设定为总层数的 60%，确保玩家绝对能打破
         lvl.goals = [{ type: 'clearIce', count: Math.floor(totalIceLayers * 0.6) }];
 
       } else {
-        // 普通关卡：随机收集目标 + 后期加入破冰
+        // === 普通关卡只有收集任务，无任何障碍物 ===
         const el1 = (i * 2) % elementTypes + 1; 
         const count1 = 15 + chapter * 5 + (i % 3) * 5; 
 
@@ -149,19 +161,9 @@ export class LevelSelectScene extends Phaser.Scene {
         } else {
           // 奇数关：单元素收集
           lvl.goals = [{ type: 'collect', element: el1, count: count1 }];
-          if (chapter >= 1) {
-            lvl.obstacles = { ices: [] };
-            for (let j = 0; j < 3 + chapter * 2; j++) {
-              const r = Math.floor(Math.random() * 8);
-              const c = Math.floor(Math.random() * 8);
-              lvl.obstacles.ices!.push({ r, c, layers: 1 + chapter });
-            }
-            lvl.goals.push({ type: 'clearIce', count: 2 + chapter });
-          }
         }
       }
       
-      // 强制覆盖缓存
       this.cache.json.add(`level-${i}`, lvl); 
     }
   }
