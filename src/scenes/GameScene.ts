@@ -66,9 +66,9 @@ export class GameScene extends Phaser.Scene {
       this.session.movesLeft = Math.floor(this.config.movesLimit * 1.2);
     }
 
-    // 【排雷】开局防死局处理
-    if (!hasPossibleMove(this.session.board)) {
-      this.session.board = shuffleBoard(this.session.board, this.session.rules);
+    // 开局防死局处理（传入障碍物）
+    if (!hasPossibleMove(this.session.board, this.session.obstacles)) {
+      this.session.board = shuffleBoard(this.session.board, this.session.obstacles, this.session.rules);
     }
 
     const scale = progress.settings.careMode ? 1.25 : 1.0;
@@ -370,8 +370,8 @@ export class GameScene extends Phaser.Scene {
       this.syncTiles();
       this.refreshHud();
 
-      if (!hasPossibleMove(this.session.board)) {
-        this.session.board = shuffleBoard(this.session.board, this.session.rules);
+      if (!hasPossibleMove(this.session.board, this.session.obstacles)) {
+        this.session.board = shuffleBoard(this.session.board, this.session.obstacles, this.session.rules);
         this.syncTiles();
       }
       if (this.session.goalsDone() && this.session.phase === 'INPUT_OPEN') {
@@ -409,8 +409,8 @@ export class GameScene extends Phaser.Scene {
       this.syncTiles();
       this.refreshHud();
 
-      if (!hasPossibleMove(this.session.board)) {
-        this.session.board = shuffleBoard(this.session.board, this.session.rules);
+      if (!hasPossibleMove(this.session.board, this.session.obstacles)) {
+        this.session.board = shuffleBoard(this.session.board, this.session.obstacles, this.session.rules);
         this.syncTiles();
       }
     } catch(e) {
@@ -425,7 +425,6 @@ export class GameScene extends Phaser.Scene {
     if (this.busy) return;
     if (!isAuto && this.session.hintQuotaLeft <= 0) return;
     
-    // 【排雷】传入障碍物数据，避开冰封格子
     const move = findHint(this.session.board, this.session.obstacles);
     if (!move) return;
     
@@ -464,7 +463,7 @@ export class GameScene extends Phaser.Scene {
       bg.setStrokeStyle(2, 0xffffff, 0.2);
       this.selected = null;
     }
-    this.session.board = shuffleBoard(this.session.board, this.session.rules);
+    this.session.board = shuffleBoard(this.session.board, this.session.obstacles, this.session.rules);
     this.syncTiles();
     this.refreshHud();
     this.resetIdleTimer();
@@ -685,7 +684,7 @@ export class GameScene extends Phaser.Scene {
 
       if (screenEggs.length === 0) break;
 
-      screenEggs.shift();
+      screenEggs.shift()!;
       const keepEggs = screenEggs.map(pos => ({
         r: pos.r, c: pos.c, val: this.session.board[pos.r][pos.c]
       }));
