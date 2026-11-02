@@ -5,7 +5,6 @@ import { hasPossibleMove, shuffleBoard } from '../core/deadlockChecker';
 import { rateStars } from '../core/starRater';
 import { findHint } from '../core/hintFinder';
 import { collapse, spawn } from '../core/gravityResolver';
-import { resolveChain } from '../core/chainResolver';
 import { progress } from '../app/ProgressService';
 import { LevelSession } from '../app/LevelSession';
 import { audio } from '../infra/AudioService';
@@ -686,7 +685,7 @@ export class GameScene extends Phaser.Scene {
 
       if (screenEggs.length === 0) break;
 
-      const currentEgg = screenEggs.shift()!;
+      screenEggs.shift();
       const keepEggs = screenEggs.map(pos => ({
         r: pos.r, c: pos.c, val: this.session.board[pos.r][pos.c]
       }));

@@ -1,4 +1,4 @@
-import type { Board, LevelConfig, Phase, Rules, Goal } from '../core/types';
+import type { Board, LevelConfig, Phase, Rules } from '../core/types';
 import { createBoard } from '../core/board';
 import { initProgress, applyRemoved, isAllDone } from '../core/goalEvaluator';
 import type { GoalProgress } from '../core/goalEvaluator';
