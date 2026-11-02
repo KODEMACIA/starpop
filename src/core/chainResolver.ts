@@ -2,7 +2,7 @@ import type { Board, Cell, GameEvent, Rules, MatchGroup } from './types';
 import { findMatches } from './matchDetector';
 import { collapse, spawn } from './gravityResolver';
 import { calculateWaveScore } from './scoreCalculator';
-import { cloneBoard } from './board';
+import { cloneBoard, createBoard } from './board';
 
 export interface ChainResult {
   board: Board;
@@ -169,7 +169,7 @@ export function resolveChain(
         if (nr >= 0 && nr < rules.rows && nc >= 0 && nc < rules.cols) {
           if (obstacles[nr][nc] > 0) {
             obstacles[nr][nc]--;
-            iceCleared++; // 【核心修复】每破除一层冰，进度 +1
+            iceCleared++;
           }
         }
       }
@@ -179,9 +179,21 @@ export function resolveChain(
     for (const cell of cells) cleared[cell.r][cell.c] = 0;
 
     if (isClearScreen) {
-      current = Array.from({ length: rules.rows }, () =>
-        Array.from({ length: rules.cols }, () => Math.floor(rng() * rules.elementTypes) + 1)
-      );
+      // 清屏时，重新生成干净棋盘
+      current = createBoard(rules, rng);
+      
+      // 把原有的石头放回去（保护石头不消失）
+      for (let r = 0; r < rules.rows; r++) {
+        for (let c = 0; c < rules.cols; c++) {
+          if (board[r][c] === 99) {
+            current[r][c] = 99;
+          }
+        }
+      }
+
+      // 强制丢弃新生成的彩蛋
+      newEggs.clear(); 
+
       for (let r = 0; r < rules.rows; r++) {
         for (let c = 0; c < rules.cols; c++) {
           if (obstacles[r][c] > 0) {
@@ -212,7 +224,17 @@ export function resolveChain(
     });
     
     wave++;
-    if (isClearScreen) break;
+  }
+
+  // 【最后防线】绝对保证返回的棋盘没有任何天然三连
+  // 如果因为放置新生成的彩蛋或者石头导致有三连，直接强制打乱
+  if (findMatches(current).length > 0) {
+    current = createBoard(rules, rng);
+    for (let r = 0; r < rules.rows; r++) {
+      for (let c = 0; c < rules.cols; c++) {
+        if (board[r][c] === 99) current[r][c] = 99;
+      }
+    }
   }
 
   return { board: current, obstacles, scoreDelta: totalScore, waves: wave - 1, events, removed, iceCleared };
